@@ -1,0 +1,135 @@
+<html>
+<head>
+	<!--[if IE]><script type="text/javascript" src="scripts/excanvas.js"></script><![endif]-->
+
+	<script type="text/javascript" src="scripts/framework.js"></script>
+	<script type="text/javascript" src="scripts/Canvas.js"></script>
+	<script type="text/javascript" src="scripts/Canvas_Wrapper.js"></script>
+	<script type="text/javascript" src="scripts/Canvas_Events.js"></script>
+	<script type="text/javascript" src="scripts/Canvas_Animator.js"></script>
+	<script type="text/javascript" src="scripts/Canvas_Animation.js"></script>
+	<script type="text/javascript" src="scripts/Canvas_Shapes.js"></script>
+	<script type="text/javascript">
+		window.onload = function() {
+			var canvas = new Canvas.Wrapper(document.getElementById("myCanvas"));
+
+			var width = 500;
+			var height = 175;
+
+			var leftSpace = 30;
+
+			var data = {
+				"37164": [0.20,0.20,0.20,0.20,0.20],
+				"37195": [0.15,0.15,0.15,0.15,0.40],
+				"37225": [0.20,0.30,0.10,0.10,0.30],
+				"37256": [0.20,0.30,0.40,0.03,0.07],
+				"37287": [0.10,0.10,0.10,0.60,0.10],
+				"37315": [0.05,0.05,0.05,0.05,0.80]
+			};
+
+			var buildPolygons = function() {
+				var newData = {};
+				for (var date in data) {
+					var newArr = [];
+					for (var id in data[date]) {
+						newArr.push(data[date][id]);
+					}
+					newData[date] = newArr;
+				}
+				for (var date in newData) {
+					var newArr = [];
+					for (var i=0; i<newData[date].length; i++) {
+						var val = 0;
+						for (var j=i; j>=0; j--) {
+							val += newData[date][j];
+						}
+						newArr[i] = val;
+					}
+					newData[date] = newArr;
+				}
+				var newArr = [];
+				for (var date in newData) {
+					for (var i=0; i<newData[date].length; i++) {
+						if (!newArr[i]) {
+							newArr[i] = [];
+						}
+						newArr[i].push({
+							date: date,
+							value: newData[date][i]
+						});
+					}
+				}
+
+				var jmpAmount = (width-leftSpace) / (newArr[0].length - 1);
+
+				var series = [[]];
+				for (var i=0; i<newArr[0].length; i++) {
+					series[0][i] = {
+						x: leftSpace + (i * jmpAmount),
+						y: height
+					};
+				}
+
+				for (var i=0; i<newArr.length; i++) {
+					var s = [];
+					for (var j=0; j<newArr[i].length; j++) {
+						s.push({
+							x: leftSpace + (j * jmpAmount),
+							y: height - (newArr[i][j].value * height)
+						});
+					}
+					series.push(s);
+				}
+				var polygons = [];
+				for (var i=1; i<series.length; i++) {
+					var points = [];
+					for (var j=0; j<series[i-1].length; j++) {
+						points.push(series[i-1][j]);
+					}
+					for (var j=series[i].length-1; j>=0; j--) {
+						points.push(series[i][j]);
+					}
+					var p = new Canvas.Shapes.Polygon(points);
+					polygons.push(p);
+				}
+				return polygons;
+			};
+			var polygons = buildPolygons();
+			for (var i=0; i<polygons.length; i++) {
+				polygons[i].fillStyle = "rgb(150,150,150)";
+				polygons[i].strokeStyle = "rgb(33,33,33)";
+				polygons[i].onmouseover = function(evt, shape) {
+					shape.fillStyle = "rgb(200,200,200)";
+					canvas.draw();
+				};
+				polygons[i].onmouseout = function(evt, shape) {
+					shape.fillStyle = "rgb(150,150,150)";
+					canvas.draw();
+				};
+				canvas.add(polygons[i]);
+			}
+
+			var rectangle = new Canvas.Shapes.Rectangle(leftSpace,0,width-leftSpace-1,height);
+			rectangle.fillStyle = "rgba(255,255,255,0)";
+			canvas.add(rectangle);
+
+			var srcImg = document.getElementById('myImage');
+
+			var targetPortfolioImage = new Canvas.Shapes.Image(srcImg, 0, 0, 11, 77, 0, 0, 11, 77);
+			var performancePortfolioImage = new Canvas.Shapes.Image(srcImg, 50, 0, 9, 108, leftSpace-15, (height/2) - (108/2), 9, 108);
+			var performanceImage = new Canvas.Shapes.Image(srcImg, 99, 0, 10, 70, 40, 0, 10, 70);
+
+			//canvas.add(targetPortfolioImage);
+			canvas.add(performancePortfolioImage);
+			//canvas.add(performanceImage);
+
+			canvas.draw();
+		};
+	</script>
+</head>
+<body>
+	<canvas id="myCanvas" width="500" height="500" style="cursor: default">
+	</canvas>
+	<img id="myImage" src="resources/Images/vertical.png" />
+</body>
+</html>

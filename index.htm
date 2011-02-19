@@ -1,0 +1,136 @@
+<html>
+<head>
+	<!--[if IE]><script type="text/javascript" src="scripts/excanvas.js"></script><![endif]-->
+	
+	<script type="text/javascript" src="scripts/framework.js"></script>
+	<script type="text/javascript" src="scripts/Canvas.js"></script>
+	<script type="text/javascript" src="scripts/Canvas_Wrapper.js"></script>
+	<script type="text/javascript" src="scripts/Canvas_Events.js"></script>
+	<script type="text/javascript" src="scripts/Canvas_Animator.js"></script>
+	<script type="text/javascript" src="scripts/Canvas_Animation.js"></script>
+	<script type="text/javascript" src="scripts/Canvas_Shapes.js"></script>
+	<script type="text/javascript">	
+		LoadInto("Canvas.Shapes", function() {
+			var WedgeAnimation = this.WedgeAnimation = function() {
+				
+			};
+		});
+
+		window.onload = function() {
+			var canvas = new Canvas.Wrapper(document.getElementById("myCanvas"));
+		
+			var circle = new Canvas.Shapes.Circle(100,100,15);
+			circle.fillStyle = "#FFFFFF";
+			circle.moveForward();
+			
+			circle.ondragstart = function(evt,shape) {
+				shape._offsetX = shape.x - evt.x;
+				shape._offsetY = shape.y - evt.y;
+			};
+			circle.ondrag = function(evt,shape) {
+				shape.x = evt.x + shape._offsetX;
+				shape.y = evt.y + shape._offsetY;
+				canvas.draw();
+			};
+			canvas.add(circle);
+		
+			var fromPercent = function(x) {
+				return x * Math.PI * 2;
+			};
+		
+			var data = [
+				100,150,20,30
+			];
+			var wedges = [];
+			var total = 0;
+			for (var i=0; i<data.length; i++) {
+				total += data[i];
+			}
+			var lastAngle = 0;
+			for (var i=0; i<data.length; i++) {
+				var nextAngle = lastAngle + fromPercent(data[i]/total);
+				var wedge = new Canvas.Shapes.Wedge(100,100,50,lastAngle,nextAngle);
+				
+				wedge.ondragstart = function(evt,shape) {
+					shape._offsetX = shape.x - evt.x;
+					shape._offsetY = shape.y - evt.y;
+				};
+				wedge.ondrag = function(evt,shape) {
+					shape.x = evt.x + shape._offsetX;
+					shape.y = evt.y + shape._offsetY;
+					canvas.draw();
+				};
+				
+				canvas.add(wedge);
+				lastAngle = nextAngle;
+			}
+		
+			var lines = new Canvas.Shapes.LineSeries([
+				{x: 10,y: 10},
+				{x: 20,y: 11},
+				{x: 30,y:14 },
+				{x: 33,y:45 }
+			]);
+			lines.lineWidth = 1;
+			lines._currentColor = 0;
+			lines.onmouseover = function(evt,shape) {
+				shape.createAnimation({
+					setter: function(x) {
+						this.strokeStyle = "rgb("+Math.round((x/100)*255)+",0,0)";
+						lines._currentColor = x;
+					},
+					from: lines._currentColor,
+					to: 100,
+					time: 500
+				}).start();
+				
+				shape.createAnimation({
+					property: "lineWidth",
+					from: shape.lineWidth,
+					to: 3,
+					time: 500
+				}).start();			
+			};
+			lines.onmouseout = function(evt,shape) {				
+				shape.createAnimation({
+					setter: function(x) {
+						this.strokeStyle = "rgb("+Math.round((x/100)*255)+",0,0)";
+						lines._currentColor = x;
+					},
+					from: lines._currentColor,
+					to: 0,
+					time: 500
+				}).start();
+				shape.createAnimation({
+					property: "lineWidth",
+					from: shape.lineWidth,
+					to: 1,
+					time: 500
+				}).start();
+			};
+			canvas.add(lines);
+			canvas.draw();
+		};	
+	</script>
+</head>
+<body>
+
+<ul
+	><li
+		>1</li
+	><li
+		>2</li
+	><li
+		>3</li
+	><li
+		><a
+			>4</a
+		></li
+	></ul
+>
+	
+	<canvas id="myCanvas" width="500" height="500" style="cursor: default">
+	</canvas>
+</body>
+</html>
+	

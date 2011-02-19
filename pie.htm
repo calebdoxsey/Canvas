@@ -1,0 +1,105 @@
+<html>
+<head>
+	<!--[if IE]><script type="text/javascript" src="scripts/excanvas.js"></script><![endif]-->
+
+	<script type="text/javascript" src="scripts/framework.js"></script>
+	<script type="text/javascript" src="scripts/Canvas.js"></script>
+	<script type="text/javascript" src="scripts/Canvas_Wrapper.js"></script>
+	<script type="text/javascript" src="scripts/Canvas_Events.js"></script>
+	<script type="text/javascript" src="scripts/Canvas_Animator.js"></script>
+	<script type="text/javascript" src="scripts/Canvas_Animation.js"></script>
+	<script type="text/javascript" src="scripts/Canvas_Shapes.js"></script>
+</head>
+<body>
+	<canvas id="myCanvas" width="150" height="150" style="cursor: default">
+	</canvas>
+	<script type="text/javascript">
+		var OverlapChart = function(canvas, data, colors) {
+			this.canvas = new Canvas.Wrapper(canvas);
+			this.canvasElement = canvas;
+			this.data = data;
+			this.colors = colors;
+
+			this.drawBackground();
+			this.drawOutline();
+			this.drawPieces();
+
+			this.canvas.draw();
+		};
+		OverlapChart.prototype._getCenter = function() {
+			return {
+				x: this.canvasElement.width / 2,
+				y: this.canvasElement.height / 2
+			};
+		};
+		OverlapChart.prototype.drawBackground = function() {
+
+		};
+		OverlapChart.prototype.drawOutline = function() {
+			var gradient = this.canvas.context.createLinearGradient(0,0,this.canvasElement.width,this.canvasElement.height);
+			gradient.addColorStop(0,"#E4E4E4");
+			gradient.addColorStop(1,"#D9D9D9");
+
+			var center = this._getCenter();
+
+			var circle = new Canvas.Shapes.Circle(center.x,center.y,Math.min(this.canvasElement.width,this.canvasElement.height) / 2);
+			circle.fillStyle = gradient;
+
+			this.canvas.add(circle);
+		};
+		OverlapChart.prototype.drawPieces = function() {
+			var fromPercent = function(x) {
+				return x * Math.PI * 2;
+			};
+
+			var center = this._getCenter();
+			var r = (Math.min(this.canvasElement.width, this.canvasElement.height) / 2) - 5;
+
+			var startAngle = 0;
+			for (var id in this.data) {
+				var endAngle = startAngle + fromPercent(this.data[id]);
+				var wedge = new Canvas.Shapes.Wedge(center.x,center.y,r,startAngle,endAngle);
+				wedge.fillStyle = this.colors[id];
+				wedge.lineWidth = 0;
+
+				for (var evt in this.wedgeEvents) {
+					wedge["on" + evt] = this.wedgeEvents[evt];
+				}
+
+				this.canvas.add(wedge);
+				startAngle = endAngle;
+			}
+		};
+		OverlapChart.prototype.wedgeEvents = {
+			"mouseover": function(evt, shape) {
+				shape.radius += 5;
+				shape.canvas.draw();
+			},
+			"mouseout": function(evt, shape) {
+				shape.radius -= 5;
+				shape.canvas.draw();
+			},
+			"click": function(evt, shape) {
+
+			}
+		};
+		window.onload = function() {
+			var chart = new OverlapChart(
+				document.getElementById("myCanvas"),
+				{
+					"1": 0.2,
+					"2": 0.15,
+					"3": 0.4,
+					"4": 0.1
+				},
+				{
+					"1": "#00FFFF",
+					"2": "#FF0000",
+					"3": "#00FF00",
+					"4": "#0000FF"
+				}
+			);
+		};
+	</script>
+</body>
+</html>

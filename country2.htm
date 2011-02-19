@@ -1,0 +1,107 @@
+<html>
+<head>
+	<!--[if IE]><script type="text/javascript" src="scripts/excanvas.js"></script><![endif]-->
+
+	<script type="text/javascript" src="scripts/framework.js"></script>
+	<script type="text/javascript" src="scripts/Canvas.js"></script>
+	<script type="text/javascript" src="scripts/Canvas_Wrapper.js"></script>
+	<script type="text/javascript" src="scripts/Canvas_Events.js"></script>
+	<script type="text/javascript" src="scripts/Canvas_Animator.js"></script>
+	<script type="text/javascript" src="scripts/Canvas_Animation.js"></script>
+	<script type="text/javascript" src="scripts/Canvas_Shapes.js"></script>
+	<script type="text/javascript" src="regions.js"></script>
+</head>
+<body>
+	<canvas id="myCanvas" width="500" height="500" style="cursor: default">
+	</canvas>
+	<script type="text/javascript">
+
+		var regionColors = {
+			"South Pacific": "#00FFFF",
+			"Africa": "#FF00FF",
+			"Europe": "#FFFF00",
+			"North America": "#0000FF",
+			"Asia": "#00FF00",
+			"South America": "#FF0000"
+		};
+/*
+		(function() {
+
+			var toHex = function(arr) {
+				var newArr = [];
+				for (var i=0; i<arr.length; i++) {
+					var hex = arr[i].toString(32);
+					while (hex.length < 2) hex = "0" + hex;
+					newArr[i] = hex;
+				}
+				return newArr.join("");
+			};
+
+			var newData = {};
+			for (var region in regions) {
+				newData[region] = [];
+				for (var i=0; i<regions[region].length; i++) {
+					var hex = toHex(regions[region][i]);
+					//console.log(regions[region][i], hex, fromHexEncoded(hex));
+					console.log(hex);
+				}
+			}
+			console.log(regions);
+			console.log(newData);
+		})();
+*/
+		var getCoordinates = function(coords, width, height) {
+			var coordinates = [];
+
+			for (var i=0; i<coords.length; i+=2) {
+				coordinates.push({
+					x: (coords[i]/1000) * width,
+					y: (coords[i+1]/1000) * height
+				});
+			}
+
+			return coordinates;
+		};
+
+		var CountryChart = function(canvas) {
+			this.canvasElement = canvas;
+			this.canvas = new Canvas.Wrapper(canvas);
+
+			var regionPolygons = {};
+
+			for (var region in RegionShapes) {
+				regionPolygons[region] = [];
+				for (var i=0; i<RegionShapes[region].length; i++) {
+
+					var polygon = new Canvas.Shapes.Polygon(getCoordinates(RegionShapes[region][i], this.canvasElement.width, this.canvasElement.height));
+
+					polygon._region = region;
+					polygon.strokeStyle = "rgba(0,0,0,0.2)";
+					polygon.fillStyle = regionColors[region];
+					polygon.onmouseover = function(evt,shape) {
+						for (var j=0; j<regionPolygons[shape._region].length; j++) {
+							regionPolygons[shape._region][j].fillStyle = "#000000";
+						}
+						shape.canvas.draw();
+					};
+					polygon.onmouseout = function(evt, shape) {
+						for (var j=0; j<regionPolygons[shape._region].length; j++) {
+							regionPolygons[shape._region][j].fillStyle = regionColors[shape._region];
+						}
+						shape.canvas.draw();
+					};
+					regionPolygons[region].push(polygon);
+					this.canvas.add(polygon);
+				}
+			}
+		};
+		CountryChart.prototype.draw = function() {
+			this.canvas.draw();
+		};
+		window.onload = function() {
+			var chart = new CountryChart(document.getElementById("myCanvas"));
+			chart.draw();
+		};
+	</script>
+</body>
+</html>
